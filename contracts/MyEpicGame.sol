@@ -26,16 +26,41 @@ contract MyEpicGame is ERC721 {
     mapping(uint256 => CharacterAttributes) public nftHolderAttributes;
     mapping(address => uint256) public nftHolders;
 
+    struct BigBoss {
+        string name;
+        string imageURI;
+        uint hp;
+        uint maxHp;
+        uint attackDamage;
+    }
+
+    BigBoss public bigBoss;
+
     constructor(
         string[] memory characterNames,
         string[] memory characterImageURIs,
         uint[] memory characterHp,
-        uint[] memory characterAttackDmg
+        uint[] memory characterAttackDmg,
+        string memory bossName,
+        string memory bossImageURI,
+        uint bossHp,
+        uint bossAttackDamage
     )
 
-    ERC721("Anime Heroes", "aHERO")
+    ERC721("SupaMeta", "HERO")
 
     {
+        // Initialize the boss. Save it to our global "bigBoss" state variable.
+        bigBoss = BigBoss({
+            name: bossName,
+            imageURI: bossImageURI,
+            hp: bossHp,
+            maxHp: bossHp,
+            attackDamage: bossAttackDamage
+        });
+
+        console.log("Done initializing boss %s w/ HP %s, img %s", bigBoss.name, bigBoss.hp, bigBoss.imageURI);
+
         for(uint i = 0; i < characterNames.length; i += 1) {
             defaultCharacters.push(CharacterAttributes({
                 characterIndex: i,
@@ -87,7 +112,7 @@ contract MyEpicGame is ERC721 {
                     abi.encodePacked(
                         '{"name": "',
                         charAttributes.name,
-                        ' -- NFT #: ',
+                        ' - SupaMetaHero #',
                         Strings.toString(_tokenId),
                         '", "description": "This is an NFT that lets people play in the game SupaMeta!", "image": "',
                         charAttributes.imageURI,
@@ -103,5 +128,29 @@ contract MyEpicGame is ERC721 {
         );
         
         return output;
+    }
+
+    function attackBoss() public {
+        uint256 nftTokenIdOfPlayer = nftHolders[msg.sender];
+        CharacterAttributes storage player = nftHolderAttributes[nftTokenIdOfPlayer];
+
+        console.log("\nPlayer w/ character %s about to attack. Has %s HP and %s AD", player.name, player.hp, player.attackDamage);
+        console.log("Boss %s has %s HP and %s AD", bigBoss.name, bigBoss.hp, bigBoss.attackDamage);
+
+        require (
+            player.hp > 0,
+            "Error: character must have HP to attack boss."
+        );
+
+        require (
+            bigBoss.hp > 0,
+            "Error: boss must have HP to attack boss."
+        );
+        
+        if (bigBoss.hp < player.attackDamage) {
+            bigBoss.hp = 0;
+        } else {
+            bigBoss.hp = bigBoss.hp - player.attackDamage;
+        }
     }
 }
