@@ -47,7 +47,7 @@ contract MyEpicGame is ERC721 {
         uint bossAttackDamage
     )
 
-    ERC721("SupaMeta", "HERO")
+    ERC721("SupaMetaHero", "HERO")
 
     {
         // Initialize the boss. Save it to our global "bigBoss" state variable.
@@ -152,5 +152,14 @@ contract MyEpicGame is ERC721 {
         } else {
             bigBoss.hp = bigBoss.hp - player.attackDamage;
         }
+
+        if (player.hp < bigBoss.attackDamage) {
+            player.hp = 0;
+        } else {
+            player.hp = player.hp - bigBoss.attackDamage;
+        }
+        
+        console.log("Player attacked boss. New boss hp: %s", bigBoss.hp);
+        console.log("Boss attacked player. New player hp: %s\n", player.hp);
     }
 }
